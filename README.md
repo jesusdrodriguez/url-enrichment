@@ -1,6 +1,6 @@
 # URL Enrichment Prototype
 
-The following URL-Enrichment prototype ingests a messy list of URLs, processess it, and finds the smallest set of lookups needed for the three enrichment services (domain registration, TLS certificate and URL reputation) while keeping a complete trail from every lookup result back to every original input line. This can later be used for logs and aiding investigations. 
+The following URL-Enrichment prototype ingests a messy list of URLs, processes it, and finds the smallest set of lookups needed for the three enrichment services (domain registration, TLS certificate and URL reputation) while keeping a complete trail from every lookup result back to every original input line. This can later be used for logs and aiding investigations.
 
 No real WHOIS, TLS or reputation services are called. Deterministic mock providers sit
 behind a small interface, so real clients can be dropped in later with little to change.

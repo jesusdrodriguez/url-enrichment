@@ -409,6 +409,44 @@ The decisions are the point of the exercise, so each one is explicit, flagged an
 
 ---
 
+## How AI was used
+
+I used Claude to help write code, tests and documentation. The design
+decisions were mine: what to reject versus flag-and-enrich, keeping the raw input,
+the per-lookup-type target keys, and masking passwords while keeping usernames
+(given the email-security context).
+
+Where I changed the AI's approach: its first version rejected any URL with a
+formatting problem. I changed that to **reject only when no host can be found**,
+because a partial enrichment is better than none, and a skipped URL can hide
+something important:
+
+- **Bad ports** (`:invalid`, `:99999`) are flagged and replaced with the scheme's
+  default port instead of rejecting the URL.
+- **Backslashes** (`https://host\path`) are accepted and treated as `/`, because
+  browsers still open these URLs. The AI originally rejected them as bad format.
+- **Malformed `%` escapes** (`/%ZZ`, `?q=%`) are kept exactly as written instead of
+  being rejected, since that is what a browser sends.
+
+I treated AI output as a draft to be checked, not as the answer:
+
+- Checked every requirement in the brief against the code and its real output,
+  not against a summary.
+- Ran the tests against the full 1,000-line exercise file, and regenerated
+  `examples/` to compare them with the committed files.
+- Tested a fresh clone of the repo before submitting.
+
+Review caught real problems:
+
+- a committed test still pointed to a smaller sample data file I had generated
+  earlier with random URLs, which had since been deleted in favour of the
+  provided exercise file;
+- README examples no longer matched the data;
+- a first version of password masking wrongly altered `mailto:` addresses
+  (now covered by a test).
+
+---
+
 ## Project layout
 
 ```

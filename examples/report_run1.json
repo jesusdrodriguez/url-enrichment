@@ -47994,11 +47994,12 @@
     },
     {
       "line_no": 977,
-      "raw": "https:// user:pass@company-002.test/",
+      "raw": "https:// user:***@company-002.test/",
       "status": "accepted",
       "reason": null,
       "flags": [
-        "userinfo_removed"
+        "userinfo_removed",
+        "password_redacted"
       ],
       "normalized_url": "https://company-002.test/",
       "lookups": {

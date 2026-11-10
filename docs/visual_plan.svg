@@ -117,7 +117,7 @@
     <rect x="40" y="0" width="1020" height="106" rx="10" class="card"/>
     <circle cx="68" cy="28" r="14" class="num"/><text x="68" y="33" text-anchor="middle" class="numt">4</text>
     <text x="94" y="33" class="st">Look up, link results back, and prove it</text>
-    <text x="94" y="56" class="sd">Mock providers · rate limit and --max budget · per-line report, trace, JSON export · 72 tests · run the file twice</text>
+    <text x="94" y="56" class="sd">Mock providers · rate limit and --max budget · per-line report, trace, JSON export · 81 tests · run the file twice</text>
     <text x="94" y="80" class="why"><tspan class="tick">▸ </tspan><tspan class="whyb">One provider interface</tspan>, not hard-wired calls: a real client replaces a mock without touching the pipeline.</text>
     <text x="94" y="98" class="why"><tspan class="tick">▸ </tspan><tspan class="whyb">Results stored once per target</tspan>, not copied per line: "ok" and "not_found" are reused; "error" is retried.</text>
   </g>

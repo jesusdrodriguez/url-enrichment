@@ -16,12 +16,40 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
-from .normalize import Reject, Skip, normalize
+from .normalize import NON_HIERARCHICAL_SCHEMES, Reject, Skip, normalize
 from .targets import derive
 
 
 def now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def redact_password(line: str) -> tuple[str, bool]:
+    """Mask the password in a URL's userinfo before the line is stored.
+
+    'https://user:secret@host/' -> 'https://user:***@host/'
+
+    Only the password is masked (RFC 3986 section 3.2.1: don't show anything
+    after the first ':' in userinfo as clear text). The username is kept:
+    in phishing, 'https://paypal.com@evil.example/' uses it to deceive, so it
+    is evidence. Returns (line, changed).
+    """
+    scheme = line.strip().split(":", 1)[0].lower()
+    if scheme in NON_HIERARCHICAL_SCHEMES:   # mailto:alice@host has no userinfo
+        return line, False
+    first_slash = line.find("/")
+    start = first_slash + 2 if first_slash != -1 and line[first_slash:first_slash + 2] == "//" else 0
+    end = next((i for i in range(start, len(line)) if line[i] in "/?#\\"), len(line))
+    authority = line[start:end]
+    at = authority.rfind("@")
+    if at == -1:
+        return line, False
+    userinfo = authority[:at]
+    colon = userinfo.find(":")
+    if colon == -1 or colon == len(userinfo) - 1:   # no password, or an empty one
+        return line, False
+    masked = userinfo[:colon + 1] + "***"
+    return line[:start] + masked + authority[at:] + line[end:], True
 
 
 def read_lines(path: str | Path) -> Iterable[tuple[int, str]]:
@@ -108,6 +136,11 @@ def ingest_lines(conn: sqlite3.Connection, lines: Iterable[tuple[int, str]],
                 reasons[r.reason] += 1
 
             stats[status] += 1
+            # Never store a password in clear text, whatever happened to the line.
+            raw_text, redacted = redact_password(raw_text)
+            if redacted:
+                flags = flags + ["password_redacted"]
+                stats["passwords_redacted"] += 1
             conn.execute(
                 """INSERT INTO raw_inputs
                        (run_id, source, line_no, raw_text, status, reason, flags, normalized_url_id)

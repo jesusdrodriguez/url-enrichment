@@ -6,7 +6,7 @@ import pytest
 
 from urlenrich.db import connect
 from urlenrich.enrich import inputs_for_target, pending_targets, plan_summary, run_lookups
-from urlenrich.ingest import ingest_file, ingest_lines
+from urlenrich.ingest import ingest_file, ingest_lines, redact_password
 from urlenrich.providers import LookupResult, RateLimiter, default_providers
 from urlenrich.report import input_records
 
@@ -129,6 +129,32 @@ def test_rejected_and_skipped_lines_are_recorded(conn):
     assert recs[1]["status"] == "skipped" and recs[1]["reason"] == "blank_line"
     assert recs[2]["status"] == "rejected" and recs[2]["reason"].startswith("unsupported_scheme")
     assert recs[3]["status"] == "accepted"
+
+
+@pytest.mark.parametrize("raw,expected", [
+    ("https://user:secret@example.com/login", "https://user:***@example.com/login"),
+    ("https:// user:pass@company-002.test/", "https:// user:***@company-002.test/"),   # line 977
+    ("user:secret@example.com/x", "user:***@example.com/x"),                           # no scheme
+    ("https://user:p@ss@example.com/", "https://user:***@example.com/"),               # '@' in password
+    # unchanged: username only (kept as evidence), empty password, '@' after the host
+    ("https://paypal.com@evil.example/", "https://paypal.com@evil.example/"),
+    ("https://user:@example.com/", "https://user:@example.com/"),
+    ("https://example.com/a:b@c", "https://example.com/a:b@c"),
+    ("mailto:security@company-001.test", "mailto:security@company-001.test"),  # no userinfo
+])
+def test_redact_password(raw, expected):
+    assert redact_password(raw) == (expected, raw != expected)
+
+
+def test_password_is_masked_in_stored_line(conn):
+    run_id, stats = ingest_lines(conn, lines("https://alice:hunter2@example.com/login"), "t")
+    rec = input_records(conn, run_id)[0]
+    assert rec["raw"] == "https://alice:***@example.com/login"
+    assert "password_redacted" in rec["flags"]
+    assert rec["normalized_url"] == "https://example.com/login"
+    assert stats["passwords_redacted"] == 1
+    stored = conn.execute("SELECT group_concat(raw_text) FROM raw_inputs").fetchone()[0]
+    assert "hunter2" not in stored
 
 
 def test_rate_limiter_spaces_calls():

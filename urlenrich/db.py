@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS raw_inputs (
     run_id              INTEGER NOT NULL REFERENCES runs(id),
     source              TEXT NOT NULL,
     line_no             INTEGER NOT NULL,
-    raw_text            TEXT NOT NULL,      -- exactly as read (minus the line ending)
+    raw_text            TEXT NOT NULL,      -- as read (minus the line ending), password masked
     status              TEXT NOT NULL CHECK (status IN ('accepted','rejected','skipped')),
     reason              TEXT,               -- why rejected / skipped
     flags               TEXT NOT NULL,      -- JSON list of normalization steps applied

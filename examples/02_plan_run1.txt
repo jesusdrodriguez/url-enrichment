@@ -29,7 +29,7 @@ reputation         987      897        0       897
       line  14 [registrable_domain]  https://portal.company-002.test/account/sign-in?return_to=%2Fdashboard
       line  15 [registrable_domain]  https://api.company-002.test/v1/health?region=region-3
       line  16 [registrable_domain]  https://cdn.company-002.test/assets/app-3.js?v=2
-      line 977 [registrable_domain]  https:// user:pass@company-002.test/
+      line 977 [registrable_domain]  https:// user:***@company-002.test/
   company-003.test   <- 9 input line(s)
       line  17 [registrable_domain]  https://www.company-003.test/products/item-3
       line  18 [registrable_domain]  https://company-003.test/products/item-3?utm_source=mail&utm_campaign=q4
@@ -1628,7 +1628,7 @@ reputation         987      897        0       897
   company-002.test:443   <- 3 input line(s)
       line  10 [explicit_https]  https://company-002.test/products/item-2?utm_source=mail&utm_campaign=q3
       line  13 [inferred_from_http]  http://company-002.test:80/catalog/item-2
-      line 977 [explicit_https]  https:// user:pass@company-002.test/
+      line 977 [explicit_https]  https:// user:***@company-002.test/
   company-003.test:443   <- 3 input line(s)
       line  18 [explicit_https]  https://company-003.test/products/item-3?utm_source=mail&utm_campaign=q4
       line  21 [inferred_from_http]  http://company-003.test:80/catalog/item-3
@@ -3504,7 +3504,7 @@ reputation         987      897        0       897
   https://company-001.test/products/item-1   <- 1 input line(s)
       line   2 [normalized_url]  https://company-001.test/products/item-1?utm_source=mail&utm_campaign=q2
   https://company-002.test/   <- 1 input line(s)
-      line 977 [normalized_url]  https:// user:pass@company-002.test/
+      line 977 [normalized_url]  https:// user:***@company-002.test/
   https://company-002.test/products/item-2   <- 1 input line(s)
       line  10 [normalized_url]  https://company-002.test/products/item-2?utm_source=mail&utm_campaign=q3
   https://company-003.test/path   <- 1 input line(s)

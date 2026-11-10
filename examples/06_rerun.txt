@@ -3,6 +3,7 @@ run 2 (same file again): {
   "distinct_urls_this_run": 897,
   "known_normalized_urls": 897,
   "lines": 1000,
+  "passwords_redacted": 1,
   "rejected": 12,
   "skipped": 1,
   "rejection_reasons": {

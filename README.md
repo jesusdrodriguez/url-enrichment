@@ -15,24 +15,25 @@ Below is a visual plan for development of the prototype:
 
 ```bash
 pip install -r requirements.txt
-python -m pytest                                   # 72 tests
+python -m pytest                                   # 81 tests
 ```
 
 Expected test output:
 
 ```text
-======================== test session starts =========================
+============================= test session starts =============================
 platform win32 -- Python 3.12.10, pytest-9.2.0, pluggy-1.7.0
 rootdir: C:\...\GitHub\url-enrichment
 configfile: pytest.ini
 testpaths: tests
-collected 72 items
+collected 81 items
 
-tests\test_normalize.py ................................         [ 79%]
-tests\test_pipeline.py ........                                  [ 90%]
-tests\test_targets.py .......                                    [100%]
+tests\test_normalize.py ................................................ [ 59%]
+.........                                                                [ 70%]
+tests\test_pipeline.py .................                                 [ 91%]
+tests\test_targets.py .......                                            [100%]
 
-========================= 72 passed in 0.88s =========================
+============================= 81 passed in 0.86s ==============================
 ```
 
 Running the prototype:
@@ -104,7 +105,7 @@ erDiagram
         int id PK
         int run_id FK
         int line_no
-        text raw_text "exactly as read"
+        text raw_text "as read, password masked"
         text status "accepted, rejected, skipped"
         text reason "why rejected or skipped"
         json flags "normalization steps applied"
@@ -162,7 +163,7 @@ line   4  HTTPS://WWW.company-001.test/products/item-1#details
 line 974  ftp://archive.company-001.test/file.zip
 ```
 
-**`raw_inputs`**: one row per line, kept exactly as read.
+**`raw_inputs`**: one row per line, kept as read (only a password in the URL is masked).
 
 | id | line_no | status | flags | normalized_url_id |
 |---|---|---|---|---|
@@ -280,6 +281,7 @@ For example, https://example.com:99999/ cannot be dropped because PORT is invali
 | Remove default port | `:443` on https, `:80` on http | identical request |
 | Keep non-default port | `cdn.example.com:8443` | different endpoint, possibly a different cert |
 | Remove credentials | `https://user:secret@example.com/login` | not part of the resource; must not be sent to third parties |
+| Mask the password in the stored raw line (flagged) | `user:secret@` → `user:***@` in `raw_text` | RFC 3986 §3.2.1 and OWASP logging guidance: never store a password in clear text. The username is kept, because in phishing (`https://paypal.com@evil.example/`) it is evidence |
 | Remove fragment | `#top`, `#login` | never sent to the server |
 | Empty path → `/` | `https://chase-verify.net` | same request |
 | Resolve `.` and `..` | `/a/../about` → `/about` | RFC 3986 |
@@ -312,7 +314,7 @@ different TLS endpoints, but one registration.
 
 Lines 977, 978, 979, 984, 992 and 999 look broken but have a clear host, so they are
 accepted instead (see the second principle above). 977, 978, 984 and 999 are flagged
-(`userinfo_removed`, `invalid_port_ignored`, `backslash_converted`); 979 (`/%ZZ`) and
+(`userinfo_removed` + `password_redacted`, `invalid_port_ignored`, `backslash_converted`); 979 (`/%ZZ`) and
 992 (`?q=%`) keep their malformed escapes exactly as written, with no flag.
 
 ---
@@ -393,8 +395,14 @@ The decisions are the point of the exercise, so each one is explicit, flagged an
   they could be, will need further research and expansion.
 - IP literals get no ownership lookup; IP WHOIS/ASN would be a fourth lookup type.
 - `http://` hosts are checked for TLS on 443 only, not on other TLS ports.
-- `raw_inputs.raw_text` stores the line verbatim, including any credentials it contained
-  (line 977). A production system should redact them at ingest.
+- **Sensitive data in query strings is sent to the reputation service.** In email, links
+  often carry password-reset tokens, magic login links, session IDs or the recipient's
+  own address (`?session=123&user=alice`). The reputation key is the full URL, so these
+  reach a third party. Removing them would change which URL is judged, so it isn't done
+  here; options are a reputation service that accepts URL hashes (as Google Safe
+  Browsing does), or stripping known token parameters. Passwords in `user:pass@` are
+  already masked in storage; if analysts need to match the same credential across
+  emails, store a keyed hash (HMAC) of it rather than the value.
 - Conservative normalization (path case, trailing slash) can leave some duplicate
   reputation lookups. This is the deliberate trade-off.
 - Mock providers return fake but deterministic data and ready to be swapped with real providers.

@@ -6,6 +6,7 @@ run 1: {
   "new_targets.registration": 270,
   "new_targets.reputation": 897,
   "new_targets.tls": 743,
+  "passwords_redacted": 1,
   "rejected": 12,
   "skipped": 1,
   "rejection_reasons": {

@@ -6071,9 +6071,9 @@ line 975: 'mailto:security@company-001.test'
 line 976: "javascript:alert('hello')"
     REJECTED: unsupported_scheme: javascript
 
-line 977: 'https:// user:pass@company-002.test/'
+line 977: 'https:// user:***@company-002.test/'
     normalized: https://company-002.test/
-    steps:      userinfo_removed
+    steps:      userinfo_removed, password_redacted
     registration company-002.test  ->  registrar=MarkMonitor-ish, created=2015-02-16
     tls          company-002.test:443  ->  not_found (no TLS listener on this port)
     reputation   https://company-002.test/  ->  verdict=clean (score 1)

@@ -1,0 +1,8 @@
+# Public Suffix List lookups (registrable domain for WHOIS/RDAP).
+# Used with its bundled list snapshot so runs are offline and repeatable.
+tldextract>=5.1
+# IDNA 2008 / UTS-46 conversion of internationalized hostnames to punycode.
+# Python's built-in "idna" codec only implements the older IDNA 2003 rules.
+idna>=3.6
+# Test runner.
+pytest>=8.0

@@ -1,0 +1,198 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 1130" width="1100" height="1130" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <title>URL enrichment prototype: development plan</title>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .title { font-size: 26px; font-weight: 700; fill: #0f172a; }
+      .sub   { font-size: 14px; fill: #475569; }
+      .head  { font-size: 13px; font-weight: 700; fill: #64748b; letter-spacing: 1.5px; }
+      .step  { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; }
+      .why   { fill: #fffbeb; stroke: #f5d48a; stroke-width: 1.5; }
+      .num   { fill: #0f766e; }
+      .numt  { font-size: 15px; font-weight: 700; fill: #ffffff; }
+      .st    { font-size: 15.5px; font-weight: 700; fill: #0f172a; }
+      .sd    { font-size: 13px; fill: #334155; }
+      .wl    { font-size: 11px; font-weight: 700; fill: #b45309; letter-spacing: 1.2px; }
+      .wd    { font-size: 13px; fill: #422006; }
+      .code  { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12.5px; fill: #0f766e; }
+      .link  { stroke: #94a3b8; stroke-width: 1.5; stroke-dasharray: 4 4; }
+      .fbox  { fill: #f0fdfa; stroke: #5eead4; stroke-width: 1.5; }
+      .fbig  { font-size: 20px; font-weight: 700; fill: #0f766e; }
+      .fsm   { font-size: 12.5px; fill: #134e4a; }
+    </style>
+  </defs>
+
+  <rect width="1100" height="1130" fill="#f8fafc"/>
+
+  <text x="40" y="52" class="title">URL Enrichment Prototype: Development Plan</text>
+  <text x="40" y="78" class="sub">Each step in build order (left), and why it was done this way instead of the alternative (right).</text>
+  <text x="40" y="112" class="head">STEP</text>
+  <text x="560" y="112" class="head">WHY THIS, NOT THAT</text>
+
+  <!-- vertical flow arrows between step boxes -->
+  <g stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)">
+    <line x1="280" y1="210" x2="280" y2="224"/>
+    <line x1="280" y1="312" x2="280" y2="326"/>
+    <line x1="280" y1="414" x2="280" y2="428"/>
+    <line x1="280" y1="516" x2="280" y2="530"/>
+    <line x1="280" y1="618" x2="280" y2="632"/>
+    <line x1="280" y1="720" x2="280" y2="734"/>
+    <line x1="280" y1="822" x2="280" y2="836"/>
+  </g>
+
+  <!-- ========== Step 1 ========== -->
+  <g transform="translate(0,124)">
+    <rect x="40" y="0" width="480" height="84" rx="10" class="step"/>
+    <circle cx="68" cy="26" r="14" class="num"/><text x="68" y="31" text-anchor="middle" class="numt">1</text>
+    <text x="92" y="31" class="st">Profile the input file</text>
+    <text x="92" y="54" class="sd">Read all 84 lines and list each kind of variant: case,</text>
+    <text x="92" y="72" class="sd">ports, defanged, IDN, IPs, quotes, junk, blanks, comments</text>
+    <line x1="520" y1="42" x2="560" y2="42" class="link"/>
+    <rect x="560" y="0" width="500" height="84" rx="10" class="why"/>
+    <text x="578" y="19" class="wl">WHY</text>
+    <text x="578" y="39" class="wd">Rules come from the real data, not from guesses.</text>
+    <text x="578" y="57" class="wd">This step found the hidden CRLF line endings and 10+</text>
+    <text x="578" y="75" class="wd">variant families before any code was written.</text>
+  </g>
+
+  <!-- ========== Step 2 ========== -->
+  <g transform="translate(0,226)">
+    <rect x="40" y="0" width="480" height="84" rx="10" class="step"/>
+    <circle cx="68" cy="26" r="14" class="num"/><text x="68" y="31" text-anchor="middle" class="numt">2</text>
+    <text x="92" y="31" class="st">Normalize each line to one canonical URL</text>
+    <text x="92" y="54" class="sd">clean → refang → scheme → host → port → path → query</text>
+    <text x="92" y="72" class="sd">→ drop fragment. Every step applied is saved as a flag.</text>
+    <line x1="520" y1="42" x2="560" y2="42" class="link"/>
+    <rect x="560" y="0" width="500" height="84" rx="10" class="why"/>
+    <text x="578" y="19" class="wl">WHY</text>
+    <text x="578" y="39" class="wd">Hand-written rules, not a normalizer library: each choice is</text>
+    <text x="578" y="57" class="wd">visible and tested. Merge only what is guaranteed identical;</text>
+    <text x="578" y="75" class="wd">path case and trailing slash are kept (a wrong merge = wrong result).</text>
+  </g>
+
+  <!-- ========== Step 3 ========== -->
+  <g transform="translate(0,328)">
+    <rect x="40" y="0" width="480" height="84" rx="10" class="step"/>
+    <circle cx="68" cy="26" r="14" class="num"/><text x="68" y="31" text-anchor="middle" class="numt">3</text>
+    <text x="92" y="31" class="st">Derive one target per lookup type</text>
+    <text x="92" y="54" class="sd">Registration → <tspan class="code">eTLD+1</tspan>  ·  TLS → <tspan class="code">host:port</tspan></text>
+    <text x="92" y="72" class="sd">Reputation → <tspan class="code">full normalized URL</tspan></text>
+    <line x1="520" y1="42" x2="560" y2="42" class="link"/>
+    <rect x="560" y="0" width="500" height="84" rx="10" class="why"/>
+    <text x="578" y="19" class="wl">WHY</text>
+    <text x="578" y="39" class="wd">Each service answers a different question, and a coarser key</text>
+    <text x="578" y="57" class="wd">lets more URLs share one call. ICANN-only suffixes, so</text>
+    <text x="578" y="75" class="wd">alice.github.io → github.io, the domain WHOIS actually knows.</text>
+  </g>
+
+  <!-- ========== Step 4 ========== -->
+  <g transform="translate(0,430)">
+    <rect x="40" y="0" width="480" height="84" rx="10" class="step"/>
+    <circle cx="68" cy="26" r="14" class="num"/><text x="68" y="31" text-anchor="middle" class="numt">4</text>
+    <text x="92" y="31" class="st">Store in SQLite, deduplicated twice</text>
+    <text x="92" y="54" class="code">raw_inputs → normalized_urls → url_targets</text>
+    <text x="92" y="72" class="code">→ lookup_targets → lookup_results</text>
+    <line x1="520" y1="42" x2="560" y2="42" class="link"/>
+    <rect x="560" y="0" width="500" height="84" rx="10" class="why"/>
+    <text x="578" y="19" class="wl">WHY</text>
+    <text x="578" y="39" class="wd">SQLite, not JSON files: UNIQUE constraints dedupe across runs,</text>
+    <text x="578" y="57" class="wd">joins give the trace, and each run is one transaction.</text>
+    <text x="578" y="75" class="wd">No server to run; the same schema moves to Postgres later.</text>
+  </g>
+
+  <!-- ========== Step 5 ========== -->
+  <g transform="translate(0,532)">
+    <rect x="40" y="0" width="480" height="84" rx="10" class="step"/>
+    <circle cx="68" cy="26" r="14" class="num"/><text x="68" y="31" text-anchor="middle" class="numt">5</text>
+    <text x="92" y="31" class="st">Plan lookups with a query</text>
+    <text x="92" y="54" class="sd">pending = a target with no result, or only an error result</text>
+    <text x="92" y="72" class="sd">Shows naive calls vs. unique targets vs. calls to make</text>
+    <line x1="520" y1="42" x2="560" y2="42" class="link"/>
+    <rect x="560" y="0" width="500" height="84" rx="10" class="why"/>
+    <text x="578" y="19" class="wl">WHY</text>
+    <text x="578" y="39" class="wd">No separate queue table that can drift out of sync.</text>
+    <text x="578" y="57" class="wd">"ok" and "not_found" are final answers and never re-fetched;</text>
+    <text x="578" y="75" class="wd">"error" (timeout, outage) is retried on the next run.</text>
+  </g>
+
+  <!-- ========== Step 6 ========== -->
+  <g transform="translate(0,634)">
+    <rect x="40" y="0" width="480" height="84" rx="10" class="step"/>
+    <circle cx="68" cy="26" r="14" class="num"/><text x="68" y="31" text-anchor="middle" class="numt">6</text>
+    <text x="92" y="31" class="st">Call providers behind one interface</text>
+    <text x="92" y="54" class="sd">Mock registration · mock TLS · mock reputation</text>
+    <text x="92" y="72" class="sd">Rate limiter per provider · --max budget per run</text>
+    <line x1="520" y1="42" x2="560" y2="42" class="link"/>
+    <rect x="560" y="0" width="500" height="84" rx="10" class="why"/>
+    <text x="578" y="19" class="wl">WHY</text>
+    <text x="578" y="39" class="wd">A real client replaces a mock without touching the pipeline.</text>
+    <text x="578" y="57" class="wd">Services are rate-limited: the budget leaves the remaining</text>
+    <text x="578" y="75" class="wd">targets pending for the next run instead of hammering them.</text>
+  </g>
+
+  <!-- ========== Step 7 ========== -->
+  <g transform="translate(0,736)">
+    <rect x="40" y="0" width="480" height="84" rx="10" class="step"/>
+    <circle cx="68" cy="26" r="14" class="num"/><text x="68" y="31" text-anchor="middle" class="numt">7</text>
+    <text x="92" y="31" class="st">Link results back to the input lines</text>
+    <text x="92" y="54" class="sd">result → target → URLs → raw lines</text>
+    <text x="92" y="72" class="sd">Views: per-line report, trace one target, JSON export</text>
+    <line x1="520" y1="42" x2="560" y2="42" class="link"/>
+    <rect x="560" y="0" width="500" height="84" rx="10" class="why"/>
+    <text x="578" y="19" class="wl">WHY</text>
+    <text x="578" y="39" class="wd">Each result is stored once per target and reached by joins,</text>
+    <text x="578" y="57" class="wd">never copied per line: one registration result for</text>
+    <text x="578" y="75" class="wd">example.com serves all 38 input lines under it.</text>
+  </g>
+
+  <!-- ========== Step 8 ========== -->
+  <g transform="translate(0,838)">
+    <rect x="40" y="0" width="480" height="84" rx="10" class="step"/>
+    <circle cx="68" cy="26" r="14" class="num"/><text x="68" y="31" text-anchor="middle" class="numt">8</text>
+    <text x="92" y="31" class="st">Test, document, run it twice</text>
+    <text x="92" y="54" class="sd">70 pytest tests · README · demo writes examples/</text>
+    <text x="92" y="72" class="sd">Ingest the same file again and compare</text>
+    <line x1="520" y1="42" x2="560" y2="42" class="link"/>
+    <rect x="560" y="0" width="500" height="84" rx="10" class="why"/>
+    <text x="578" y="19" class="wl">WHY</text>
+    <text x="578" y="39" class="wd">Tests pin every normalization decision, so a change that</text>
+    <text x="578" y="57" class="wd">merges or splits URLs differently fails loudly. The second</text>
+    <text x="578" y="75" class="wd">run making 0 calls is the proof that reuse works.</text>
+  </g>
+
+  <!-- ========== Footer: what it achieves ========== -->
+  <text x="40" y="968" class="head">ON THE SAMPLE FILE</text>
+  <g transform="translate(0,984)">
+    <rect x="40"  y="0" width="150" height="104" rx="10" class="fbox"/>
+    <text x="115" y="44" text-anchor="middle" class="fbig">84</text>
+    <text x="115" y="68" text-anchor="middle" class="fsm">input lines</text>
+
+    <rect x="226" y="0" width="150" height="104" rx="10" class="fbox"/>
+    <text x="301" y="44" text-anchor="middle" class="fbig">73</text>
+    <text x="301" y="68" text-anchor="middle" class="fsm">accepted</text>
+    <text x="301" y="86" text-anchor="middle" class="fsm">(9 rejected, 2 skipped)</text>
+
+    <rect x="412" y="0" width="150" height="104" rx="10" class="fbox"/>
+    <text x="487" y="44" text-anchor="middle" class="fbig">45</text>
+    <text x="487" y="68" text-anchor="middle" class="fsm">distinct URLs</text>
+
+    <rect x="598" y="0" width="276" height="104" rx="10" class="fbox"/>
+    <text x="736" y="36" text-anchor="middle" class="fbig">84 lookups</text>
+    <text x="736" y="58" text-anchor="middle" class="fsm">45 reputation · 27 TLS · 12 registration</text>
+    <text x="736" y="80" text-anchor="middle" class="fsm">instead of 212 (one per line, per type)</text>
+
+    <rect x="910" y="0" width="150" height="104" rx="10" class="fbox"/>
+    <text x="985" y="44" text-anchor="middle" class="fbig">0</text>
+    <text x="985" y="68" text-anchor="middle" class="fsm">lookups when the</text>
+    <text x="985" y="86" text-anchor="middle" class="fsm">same file is re-run</text>
+
+    <g stroke="#0f766e" stroke-width="1.8" marker-end="url(#arrow)">
+      <line x1="192" y1="52" x2="222" y2="52"/>
+      <line x1="378" y1="52" x2="408" y2="52"/>
+      <line x1="564" y1="52" x2="594" y2="52"/>
+      <line x1="876" y1="52" x2="906" y2="52"/>
+    </g>
+  </g>
+</svg>

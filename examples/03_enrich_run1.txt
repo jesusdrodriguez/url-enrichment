@@ -1,0 +1,6 @@
+lookups performed: {
+  "registration.ok": 270,
+  "reputation.ok": 897,
+  "tls.not_found": 106,
+  "tls.ok": 637
+}

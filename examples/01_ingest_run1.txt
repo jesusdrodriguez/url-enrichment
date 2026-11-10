@@ -1,0 +1,17 @@
+run 1: {
+  "accepted": 987,
+  "distinct_urls_this_run": 897,
+  "lines": 1000,
+  "new_normalized_urls": 897,
+  "new_targets.registration": 270,
+  "new_targets.reputation": 897,
+  "new_targets.tls": 743,
+  "rejected": 12,
+  "skipped": 1,
+  "rejection_reasons": {
+    "invalid_host": 4,
+    "missing_host": 3,
+    "single_label_host": 1,
+    "unsupported_scheme": 4
+  }
+}

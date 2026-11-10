@@ -99,10 +99,28 @@ def test_skipped(raw, reason):
     ("not a url at all", "invalid_host"),
     ("not-a-valid-url-at-all", "single_label_host"),
     ("example", "single_label_host"),
-    ("https://example.com:99999/", "invalid_port"),
     ("gopher://example.com/", "unsupported_scheme"),
 ])
 def test_rejected(raw, reason):
     with pytest.raises(Reject) as e:
         normalize(raw)
     assert e.value.reason == reason
+
+
+def test_bad_percent_encoding_kept_as_written():
+    assert url("https://example.com/%ZZ") == "https://example.com/%ZZ"
+    assert url("https://example.com/?q=%") == "https://example.com/?q=%"
+
+
+def test_invalid_port_keeps_the_host():
+    n = normalize("https://example.com:invalid/path")
+    assert (n.url, n.port) == ("https://example.com/path", 443)
+    assert "invalid_port_ignored" in n.flags
+    assert url("https://example.com:99999/") == "https://example.com/"
+
+
+def test_backslash_is_a_slash_before_the_query():
+    n = normalize("https://example.com\\backslash")
+    assert n.url == "https://example.com/backslash"
+    assert "backslash_converted" in n.flags
+    assert url("https://example.com/a?x=\\y") == "https://example.com/a?x=%5Cy"

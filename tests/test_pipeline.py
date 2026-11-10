@@ -10,7 +10,7 @@ from urlenrich.ingest import ingest_file, ingest_lines
 from urlenrich.providers import LookupResult, RateLimiter, default_providers
 from urlenrich.report import input_records
 
-DATA = Path(__file__).resolve().parent.parent / "data" / "raw_urls.txt"
+DATA = Path(__file__).resolve().parent.parent / "data" / "exercise_urls.txt"
 
 
 @pytest.fixture
@@ -28,16 +28,24 @@ def count(conn, table):
     return conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
 
 
-def test_sample_file_counts(conn):
+def test_exercise_file_counts(conn):
     run_id, stats = ingest_file(conn, DATA)
-    assert stats["lines"] == 84
-    assert (stats["accepted"], stats["rejected"], stats["skipped"]) == (73, 9, 2)
+    assert stats["lines"] == 1000
+    assert (stats["accepted"], stats["rejected"], stats["skipped"]) == (987, 12, 1)
+    assert stats["rejection_reasons"] == {
+        "invalid_host": 4, "missing_host": 3,
+        "single_label_host": 1, "unsupported_scheme": 4,
+    }
     plan = plan_summary(conn, run_id)
-    assert plan["registration"]["unique_targets"] == 12
-    assert plan["tls"]["unique_targets"] == 27
-    assert plan["reputation"]["unique_targets"] == 45
+    # naive = one call per accepted line; unique = after grouping
+    assert plan["registration"]["naive_requests"] == 914
+    assert plan["tls"]["naive_requests"] == 986
+    assert plan["reputation"]["naive_requests"] == 987
+    assert plan["registration"]["unique_targets"] == 270
+    assert plan["tls"]["unique_targets"] == 743
+    assert plan["reputation"]["unique_targets"] == 897
     # every input line is stored, including the bad ones
-    assert count(conn, "raw_inputs") == 84
+    assert count(conn, "raw_inputs") == 1000
 
 
 def test_duplicates_create_one_target_but_keep_every_link(conn):
@@ -55,13 +63,13 @@ def test_rerun_reuses_results_and_makes_no_calls(conn):
     run1, _ = ingest_file(conn, DATA)
     first = run_lookups(conn, providers, run1)
     calls_after_first = {k: p.calls for k, p in providers.items()}
-    assert calls_after_first == {"registration": 12, "tls": 27, "reputation": 45}
-    assert sum(first.values()) == 84
+    assert calls_after_first == {"registration": 270, "tls": 743, "reputation": 897}
+    assert sum(first.values()) == 1910
 
     targets_before = count(conn, "lookup_targets")
     run2, stats2 = ingest_file(conn, DATA)
     assert stats2.get("new_normalized_urls", 0) == 0
-    assert stats2["known_normalized_urls"] == 45
+    assert stats2["known_normalized_urls"] == 897
     assert count(conn, "lookup_targets") == targets_before
     assert run_lookups(conn, providers, run2) == {}
     assert {k: p.calls for k, p in providers.items()} == calls_after_first
@@ -112,7 +120,7 @@ def test_errors_are_retried_on_next_run(conn):
 def test_budget_leaves_rest_pending(conn):
     run1, _ = ingest_file(conn, DATA)
     run_lookups(conn, default_providers(), run1, max_per_type=5)
-    assert len(pending_targets(conn, "reputation")) == 40
+    assert len(pending_targets(conn, "reputation")) == 892
 
 
 def test_rejected_and_skipped_lines_are_recorded(conn):

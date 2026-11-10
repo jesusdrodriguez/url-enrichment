@@ -1,0 +1,38 @@
+TRACE registration: company-001.test
+  result: registrar=NameCheap-ish LLC, created=2010-12-07  (fetched in run 1, attempts 1)
+  8 normalized URL(s):
+    ftp://archive.company-001.test/file.zip   [registrable_domain]
+        run 1 line 974: ftp://archive.company-001.test/file.zip
+    http://company-001.test/catalog/item-1   [registrable_domain]
+        run 1 line   5: http://company-001.test:80/catalog/item-1
+    https://api.company-001.test/v1/health?region=region-2   [registrable_domain]
+        run 1 line   7: https://api.company-001.test/v1/health?region=region-2
+    https://cdn.company-001.test/assets/app-2.js?v=1   [registrable_domain]
+        run 1 line   8: https://cdn.company-001.test/assets/app-2.js?v=1
+    https://company-001.test/products/item-1   [registrable_domain]
+        run 1 line   2: https://company-001.test/products/item-1?utm_source=mail&utm_campaign=q2
+    https://portal.company-001.test/account/sign-in?return_to=%2Fdashboard   [registrable_domain]
+        run 1 line   6: https://portal.company-001.test/account/sign-in?return_to=%2Fdashboard
+    https://www.company-001.test/products/item-1   [registrable_domain]
+        run 1 line   1: https://www.company-001.test/products/item-1
+        run 1 line   4: HTTPS://WWW.company-001.test/products/item-1#details
+    https://www.company-001.test/products/item-1/   [registrable_domain]
+        run 1 line   3: https://www.company-001.test/products/item-1/
+
+TRACE tls: www.company-005.test:443
+  result: issuer=DigiCert TLS RSA, expires=2027-06-01  (fetched in run 1, attempts 1)
+  3 normalized URL(s):
+    http://www.company-005.test/no-scheme   [inferred_from_http]
+        run 1 line 980: www.company-005.test/no-scheme
+    https://www.company-005.test/products/item-5   [explicit_https]
+        run 1 line  33: https://www.company-005.test/products/item-5
+        run 1 line  36: HTTPS://WWW.company-005.test/products/item-5#details
+    https://www.company-005.test/products/item-5/   [explicit_https]
+        run 1 line  35: https://www.company-005.test/products/item-5/
+
+TRACE reputation: https://www.company-001.test/products/item-1
+  result: verdict=clean (score 3)  (fetched in run 1, attempts 1)
+  1 normalized URL(s):
+    https://www.company-001.test/products/item-1   [normalized_url]
+        run 1 line   1: https://www.company-001.test/products/item-1
+        run 1 line   4: HTTPS://WWW.company-001.test/products/item-1#details

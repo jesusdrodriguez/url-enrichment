@@ -1,6 +1,6 @@
 """SQLite schema and connection helpers.
 
-Five layers, from what we were given to what we learned:
+Six tables, from what we were given to what we learned:
 
     runs              one row per ingestion
     raw_inputs        every input line, verbatim, per run      (provenance)

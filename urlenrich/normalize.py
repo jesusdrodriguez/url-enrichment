@@ -44,7 +44,6 @@ TRACKING_PREFIXES = ("utm_",)
 
 _UNRESERVED = set("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")
 _PCT = re.compile(r"%([0-9A-Fa-f]{2})")
-_BARE_PCT = re.compile(r"%(?![0-9A-Fa-f]{2})")
 _SCHEME_WITH_SLASHES = re.compile(r"^([A-Za-z][A-Za-z0-9+.\-]*)://")
 _SCHEME_COLON = re.compile(r"^([A-Za-z][A-Za-z0-9+.\-]*):")
 _ASCII_LABEL = re.compile(r"^[a-z0-9_](?:[a-z0-9_\-]{0,61}[a-z0-9_])?$")
@@ -156,6 +155,15 @@ def split_scheme(text: str, flags: list[str]) -> tuple[str, str]:
     flags.append("scheme_inferred")
     return "http", text
 
+def backslashes_to_slashes(rest: str, flags: list[str]) -> str:
+    """Browsers treat '\\' as '/' in http, https and ftp URLs (WHATWG URL
+    standard), but only before the query and fragment."""
+    cut = min((i for i in (rest.find("?"), rest.find("#")) if i != -1), default=len(rest))
+    head, tail = rest[:cut], rest[cut:]
+    if "\\" in head:
+        flags.append("backslash_converted")
+        head = head.replace("\\", "/")
+    return head + tail
 
 # --------------------------------------------------------------------------- #
 # Step 4-6: authority, host, port
@@ -256,7 +264,10 @@ def normalize_port(port: str | None, scheme: str, flags: list[str]) -> int:
     if port is None or port == "":
         return default
     if not port.isdigit() or not (0 < int(port) < 65536):
-        raise Reject("invalid_port", port)
+        # Unusable port, but the host is fine. Never lose a host over it:
+        # fall back to the scheme's default port and record what happened.
+        flags.append("invalid_port_ignored")
+        return default
     if int(port) == default:
         flags.append("default_port_removed")
     return int(port)
@@ -269,13 +280,13 @@ def normalize_port(port: str | None, scheme: str, flags: list[str]) -> int:
 def normalize_percent_encoding(text: str, safe: str) -> str:
     """Make equivalent encodings identical.
 
-    - a stray '%' becomes '%25'
+    - a malformed escape ('%ZZ', a lone '%') is left exactly as written,
+      the way a browser sends it; it never causes a rejection
     - characters that must be encoded are encoded (space, <, >, non-ASCII...)
     - '%7E' (unreserved char) is decoded to '~'
     - remaining escapes use uppercase hex: '%2f' -> '%2F'
       (%2F is NOT decoded to '/': an encoded slash is a different path)
     """
-    text = _BARE_PCT.sub("%25", text)
     text = quote(text, safe=safe)
 
     def fix(m: re.Match) -> str:
@@ -351,6 +362,7 @@ def normalize(raw: str) -> NormalizedURL:
     flags: list[str] = []
     text = refang(clean(raw, flags), flags)
     scheme, rest = split_scheme(text, flags)
+    rest = backslashes_to_slashes(rest, flags)
 
     authority, remainder = split_authority(rest)
     if not authority:

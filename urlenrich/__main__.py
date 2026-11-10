@@ -1,12 +1,12 @@
 """Command line interface.
 
-    python -m urlenrich ingest data/raw_urls.txt
+    python -m urlenrich ingest data/exercise_urls.txt
     python -m urlenrich plan
     python -m urlenrich enrich
     python -m urlenrich report
-    python -m urlenrich trace registration paypal-update.com
+    python -m urlenrich trace registration company-001.test
     python -m urlenrich export --out results.json
-    python -m urlenrich demo data/raw_urls.txt --out examples/
+    python -m urlenrich demo data/exercise_urls.txt --out examples/
 """
 
 from __future__ import annotations
@@ -62,6 +62,16 @@ def cmd_export(conn, a):
     Path(a.out).write_text(json.dumps(doc, indent=2, ensure_ascii=False))
     print(f"wrote {a.out}")
 
+def busiest_target(conn, lookup_type: str) -> str | None:
+    """The target of this type with the most input lines behind it."""
+    row = conn.execute(
+        """SELECT t.target_key FROM lookup_targets t
+           JOIN url_targets ut ON ut.target_id = t.id
+           JOIN raw_inputs ri  ON ri.normalized_url_id = ut.normalized_url_id
+           WHERE t.lookup_type = ?
+           GROUP BY t.id ORDER BY COUNT(*) DESC, t.target_key LIMIT 1""",
+        (lookup_type,)).fetchone()
+    return row[0] if row else None
 
 def cmd_demo(conn, a):
     """Full walk-through on a fresh DB, written to example files."""
@@ -79,11 +89,9 @@ def cmd_demo(conn, a):
     counts1 = run_lookups(conn, providers, run1)
     save("03_enrich_run1.txt", "lookups performed: " + json.dumps(counts1, indent=2))
     save("04_report_run1.txt", render_report(conn, run1))
-    save("05_trace_examples.txt", "\n\n".join([
-        render_trace(conn, "registration", "paypal-update.com"),
-        render_trace(conn, "tls", "www.example.com:443"),
-        render_trace(conn, "reputation", "https://www.example.com/"),
-    ]))
+    traces = [render_trace(conn, lt, key) for lt in LOOKUP_TYPES
+              if (key := busiest_target(conn, lt))]
+    save("05_trace_examples.txt", "\n\n".join(traces))
     Path(out / "report_run1.json").write_text(json.dumps(
         {"run_id": run1, "plan": plan_summary(conn, run1), "inputs": input_records(conn, run1)},
         indent=2, ensure_ascii=False), encoding="utf-8")

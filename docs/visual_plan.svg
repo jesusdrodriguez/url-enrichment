@@ -47,14 +47,14 @@
     <rect x="40" y="0" width="480" height="84" rx="10" class="step"/>
     <circle cx="68" cy="26" r="14" class="num"/><text x="68" y="31" text-anchor="middle" class="numt">1</text>
     <text x="92" y="31" class="st">Profile the input file</text>
-    <text x="92" y="54" class="sd">Read all 84 lines and list each kind of variant: case,</text>
-    <text x="92" y="72" class="sd">ports, defanged, IDN, IPs, quotes, junk, blanks, comments</text>
+    <text x="92" y="54" class="sd">Read all 1,000 lines and list each kind of variant: case,</text>
+    <text x="92" y="72" class="sd">ports, tracking params, IDN, IPs, lookalikes, junk, blanks</text>
     <line x1="520" y1="42" x2="560" y2="42" class="link"/>
     <rect x="560" y="0" width="500" height="84" rx="10" class="why"/>
     <text x="578" y="19" class="wl">WHY</text>
     <text x="578" y="39" class="wd">Rules come from the real data, not from guesses.</text>
-    <text x="578" y="57" class="wd">This step found the hidden CRLF line endings and 10+</text>
-    <text x="578" y="75" class="wd">variant families before any code was written.</text>
+    <text x="578" y="57" class="wd">It showed 7 repeating URL patterns, lookalike domain pairs</text>
+    <text x="578" y="75" class="wd">and a 29-line broken section to design the rules around.</text>
   </g>
 
   <!-- ========== Step 2 ========== -->
@@ -83,8 +83,8 @@
     <rect x="560" y="0" width="500" height="84" rx="10" class="why"/>
     <text x="578" y="19" class="wl">WHY</text>
     <text x="578" y="39" class="wd">Each service answers a different question, and a coarser key</text>
-    <text x="578" y="57" class="wd">lets more URLs share one call. ICANN-only suffixes, so</text>
-    <text x="578" y="75" class="wd">alice.github.io → github.io, the domain WHOIS actually knows.</text>
+    <text x="578" y="57" class="wd">lets more URLs share one call: lines 1–8 (7 distinct URLs)</text>
+    <text x="578" y="75" class="wd">need 1 registration lookup, 5 TLS and 7 reputation lookups.</text>
   </g>
 
   <!-- ========== Step 4 ========== -->
@@ -144,7 +144,7 @@
     <text x="578" y="19" class="wl">WHY</text>
     <text x="578" y="39" class="wd">Each result is stored once per target and reached by joins,</text>
     <text x="578" y="57" class="wd">never copied per line: one registration result for</text>
-    <text x="578" y="75" class="wd">example.com serves all 38 input lines under it.</text>
+    <text x="578" y="75" class="wd">company-001.test serves all 9 input lines under it.</text>
   </g>
 
   <!-- ========== Step 8 ========== -->
@@ -152,7 +152,7 @@
     <rect x="40" y="0" width="480" height="84" rx="10" class="step"/>
     <circle cx="68" cy="26" r="14" class="num"/><text x="68" y="31" text-anchor="middle" class="numt">8</text>
     <text x="92" y="31" class="st">Test, document, run it twice</text>
-    <text x="92" y="54" class="sd">70 pytest tests · README · demo writes examples/</text>
+    <text x="92" y="54" class="sd">72 pytest tests · README · demo writes examples/</text>
     <text x="92" y="72" class="sd">Ingest the same file again and compare</text>
     <line x1="520" y1="42" x2="560" y2="42" class="link"/>
     <rect x="560" y="0" width="500" height="84" rx="10" class="why"/>
@@ -163,25 +163,25 @@
   </g>
 
   <!-- ========== Footer: what it achieves ========== -->
-  <text x="40" y="968" class="head">ON THE SAMPLE FILE</text>
+  <text x="40" y="968" class="head">ON THE EXERCISE FILE</text>
   <g transform="translate(0,984)">
     <rect x="40"  y="0" width="150" height="104" rx="10" class="fbox"/>
-    <text x="115" y="44" text-anchor="middle" class="fbig">84</text>
+    <text x="115" y="44" text-anchor="middle" class="fbig">1,000</text>
     <text x="115" y="68" text-anchor="middle" class="fsm">input lines</text>
 
     <rect x="226" y="0" width="150" height="104" rx="10" class="fbox"/>
-    <text x="301" y="44" text-anchor="middle" class="fbig">73</text>
+    <text x="301" y="44" text-anchor="middle" class="fbig">987</text>
     <text x="301" y="68" text-anchor="middle" class="fsm">accepted</text>
-    <text x="301" y="86" text-anchor="middle" class="fsm">(9 rejected, 2 skipped)</text>
+    <text x="301" y="86" text-anchor="middle" class="fsm">(12 rejected, 1 skipped)</text>
 
     <rect x="412" y="0" width="150" height="104" rx="10" class="fbox"/>
-    <text x="487" y="44" text-anchor="middle" class="fbig">45</text>
+    <text x="487" y="44" text-anchor="middle" class="fbig">897</text>
     <text x="487" y="68" text-anchor="middle" class="fsm">distinct URLs</text>
 
     <rect x="598" y="0" width="276" height="104" rx="10" class="fbox"/>
-    <text x="736" y="36" text-anchor="middle" class="fbig">84 lookups</text>
-    <text x="736" y="58" text-anchor="middle" class="fsm">45 reputation · 27 TLS · 12 registration</text>
-    <text x="736" y="80" text-anchor="middle" class="fsm">instead of 212 (one per line, per type)</text>
+    <text x="736" y="36" text-anchor="middle" class="fbig">1,910 lookups</text>
+    <text x="736" y="58" text-anchor="middle" class="fsm">897 reputation · 743 TLS · 270 registration</text>
+    <text x="736" y="80" text-anchor="middle" class="fsm">instead of 2,887 (one per line, per type)</text>
 
     <rect x="910" y="0" width="150" height="104" rx="10" class="fbox"/>
     <text x="985" y="44" text-anchor="middle" class="fbig">0</text>
